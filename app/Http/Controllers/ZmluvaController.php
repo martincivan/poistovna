@@ -21,6 +21,9 @@ class ZmluvaController extends Controller
         $user_id = $user_client->getByAttributeValue(['attribute_name' => 'email', 'attribute_value' => $email, 'ids' => []])->zakazniks->zakaznik->id;
 
         $zmluvy = $client->getByAttributeValue(['attribute_name' => 'zakaznik_id', 'attribute_value' => $user_id, 'ids' => []])->zmluvas->zmluva;
+        if (is_object($zmluvy)) {
+            $zmluvy = array($zmluvy);
+        }
 
         return view('home', ['zmluvy'=> $zmluvy]);
     }
@@ -69,6 +72,9 @@ class ZmluvaController extends Controller
         $zmluva = $zmluva_client->getByID(['id' => $id])->zmluva;
         $produkt_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095produkt?WSDL');
         $produkty = $produkt_client->getAll()->produkts->produkt;
+        if (is_object($produkty)) {
+            $produkty = array($produkty);
+        }
 
         return view('upravazmluvy', ['produkty' => $produkty, 'zmluva' => $zmluva]);
     }

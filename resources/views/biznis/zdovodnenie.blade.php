@@ -10,7 +10,7 @@
         <p>Nižšie zadajte dôvod zamietnutia žiadosti</p>
         <form action="/zmluva/{{$zmluva->id}}/zamietni" method="post">
             @csrf
-            <textarea name="zdovodnenie" required></textarea><br>
+            <textarea name="zdovodnenie" class="form-control" required></textarea><br>
             <input class="btn btn-primary" type="submit" value="Hotovo">
         </form>
     </div>

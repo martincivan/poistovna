@@ -8,12 +8,12 @@
         <div class="col">
             Nový poistný produkt
             <form action="zmluva" method="post">
-                <select name="produkt">
+                <select name="produkt" class="form-control" required>
                     @foreach ($produkty as $produkt)
-                        <option value="{{$produkt->id}}">{{$produkt->nazov}}</option>
+                        <option value="{{$produkt}}">{{$produkt->nazov}}</option>
                     @endforeach
                 </select><br>
-                <input type="submit" value="Vytvoriť žiadosť">
+                <input class="btn btn-primary" type="submit" value="Vytvoriť žiadosť">
             </form>
         </div>
     </div>
