@@ -21,10 +21,13 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/home', 'ZmluvaController@index')->name('home');
 
 Route::resource('produkt', 'ProduktController');
+Route::resource('zmluva', 'ZmluvaController');
 
-Route::get('/asd', function () {
+Route::get('/potvrdenie', 'ZmluvaController@potvrdenie');
+
+Route::get('/novyprodukt', function () {
     return view('biznis.produkty');
 });
