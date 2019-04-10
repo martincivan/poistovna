@@ -21,12 +21,15 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/home', 'ZmluvaController@index')->name('home');
+Route::get('/home', 'ZmluvaController@index')->name('home')->middleware('auth');
 
 Route::resource('produkt', 'ProduktController');
-Route::resource('zmluva', 'ZmluvaController');
+Route::resource('zmluva', 'ZmluvaController')->middleware('auth');
 
-Route::get('/potvrdenie', 'ZmluvaController@potvrdenie');
+Route::get('/potvrdenie', 'ZmluvaController@potvrdenie_formular');
+Route::get('/zmluva/{id}/potvrd', 'ZmluvaController@potvrd');
+Route::get('/zmluva/{id}/zdovodnenie', 'ZmluvaController@zdovodnenie');
+Route::post('/zmluva/{id}/zamietni', 'ZmluvaController@zamietni');
 
 Route::get('/novyprodukt', function () {
     return view('biznis.produkty');

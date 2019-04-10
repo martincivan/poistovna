@@ -8,7 +8,7 @@
         <div class="col">
             Nový poistný produkt
             <form action="zmluva" method="post">
-                <select>
+                <select name="produkt">
                     @foreach ($produkty as $produkt)
                         <option value="{{$produkt->id}}">{{$produkt->nazov}}</option>
                     @endforeach

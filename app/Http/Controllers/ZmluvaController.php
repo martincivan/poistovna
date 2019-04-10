@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\ApiClient\client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -95,7 +96,7 @@ class ZmluvaController extends Controller
         //
     }
 
-    public function potvrdenie()
+    public function potvrdenie_formular()
     {
         $zmluva_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zmluva?WSDL');
         $zmluvy = $zmluva_client->getByAttributeValue(['attribute_name' => 'stav', 'attribute_value' => 1, 'ids' => []])->zmluvas->zmluva;
@@ -103,11 +104,43 @@ class ZmluvaController extends Controller
         $zakaznik_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zakaznik?WSDL');
         $produkt_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095produkt?WSDL');
 
+        if (is_object($zmluvy)) {
+            $zmluvy = array($zmluvy);
+        }
         foreach ($zmluvy as $zmluva) {
             $zmluva->zakaznik = $zakaznik_client->getByID(['id' => $zmluva->zakaznik_id])->zakaznik;
             $zmluva->produkt = $produkt_client->getByID(['id' => $zmluva->produkt_id])->produkt;
         }
 
         return view('biznis.potvrdenie', ['zmluvy' => $zmluvy]);
+    }
+
+    public function potvrd($id)
+    {
+        $zmluva_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zmluva?WSDL');
+        $zmluva = $zmluva_client->getByID(['id' => $id])->zmluva;
+        $zmluva->stav = 2;
+        $zmluva_client->update(["team_id" => client::TEAM_ID, "team_password" => client::TEAM_PWD, "entity_id" => $id, "zmluva" => $zmluva]);
+
+        return view('ok', ['akcia' => 'Potvrdenie žiadosti', 'sprava' => 'Žiadosť o zmluvu bola potvrdená', 'redirect' => '/potvrdenie']);
+    }
+
+    public function zamietni($id, Request $r)
+    {
+        $zmluva_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zmluva?WSDL');
+        $zmluva = $zmluva_client->getByID(['id' => $id])->zmluva;
+        $zmluva->stav = 3;
+        $zmluva->zdovodnenie = $r->zdovodnenie;
+        $zmluva_client->update(["team_id" => client::TEAM_ID, "team_password" => client::TEAM_PWD, "entity_id" => $id, "zmluva" => $zmluva]);
+
+        return view('ok', ['akcia' => 'Zamietnutie žiadosti', 'sprava' => 'Žiadosť o zmluvu bola zamietnutá', 'redirect' => '/potvrdenie']);
+    }
+
+    public function zdovodnenie($id)
+    {
+        $zmluva_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zmluva?WSDL');
+        $zmluva = $zmluva_client->getByID(['id' => $id])->zmluva;
+
+        return view('biznis.zdovodnenie', ['zmluva' => $zmluva]);
     }
 }

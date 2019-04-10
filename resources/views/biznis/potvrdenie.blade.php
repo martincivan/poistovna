@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="card-header">Potvrdenie žiadosti</div>
+<div class="card-header">Vybavenie žiadostí (počet nevybavených: {{count($zmluvy)}})</div>
 
 <div class="card-body p-0">
     <div class="col">
@@ -34,7 +34,7 @@
                         </div>
                     <div class="row">
                         <a class="btn btn-primary mr-4" href="/zmluva/{{$z->id}}/potvrd">Potvrdiť</a><br>
-                        <a class="btn btn-secondary" href="/zmluva/{{$z->id}}/zamietni">Zamietnuť</a>
+                        <a class="btn btn-secondary" href="/zmluva/{{$z->id}}/zdovodnenie">Zamietnuť</a>
                     </div>
                 </div>
             </div>
