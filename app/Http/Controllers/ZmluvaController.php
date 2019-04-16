@@ -46,7 +46,7 @@ class ZmluvaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return view('ok', ['akcia' => 'Vytvorenie žiadosti', 'sprava' => 'Žiadosť o zmenu zmluvy bola zaznamenaná.', 'redirect' => '/home']);
     }
 
     /**
@@ -73,9 +73,9 @@ class ZmluvaController extends Controller
         $produkt_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095produkt?WSDL');
         $produkty = $produkt_client->getAll()->produkts->produkt;
         if (is_object($produkty)) {
+            echo('hej');
             $produkty = array($produkty);
         }
-
         return view('upravazmluvy', ['produkty' => $produkty, 'zmluva' => $zmluva]);
     }
 

@@ -6,7 +6,7 @@ use App\ApiClient\client;
 use Illuminate\Http\Request;
 
 
-include "/srv/http/pis/poistovna/app/ApiClient/Team095produktSoapClient.php";
+//include "app\ApiClient\Team095produktSoapClient.php";
 
 class ProduktController extends Controller
 {
@@ -48,15 +48,18 @@ class ProduktController extends Controller
     public function store(Request $request)
     {
         $client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095produkt?WSDL');
-        $obj = new \produktType();
-        $obj->name = $request->get('nazov');
-        $obj->nazov = $request->get('nazov');
-        $obj->cena = $request->get('cena');
-        $obj->zaciatok =$request->get('zaciatok');;
-        $obj->koniec = $request->get('koniec');;
-        $obj->popis = $request->get('popis');
+        $obj = [
+            "name" => $request->get('nazov'),
+            "nazov" => $request->get('nazov'),
+            "cena" => $request->get('cena'),
+            "zaciatok" => $request->get('zaciatok'),
+            "koniec" => $request->get('koniec'),
+            "popis" => $request->get('popis'),
+            "id" => null,
+            "schvalene" => null,
+        ];
         $id = $client->insert(["team_id" => client::TEAM_ID, "team_password" => client::TEAM_PWD, "produkt" => $obj]);
-        return null;
+        return view('ok', ['akcia' => 'Pridanie nového produktu', 'sprava' => 'Produkt: '.$obj['name'].' bol pridaný a začne platiť '.$obj['zaciatok'], 'redirect' => '/novyprodukt']);
     }
 
     /**
