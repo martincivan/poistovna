@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\User;
+use App\ApiClient\client;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -63,6 +64,18 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        $client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zakaznik?WSDL');
+        $obj = [
+            "id" => null,
+            "name" => $data['name'],
+            "heslo" => $data['password'],
+            "email" => $data['email'],
+            "adresa" => $data['adresa'],
+            "datum_narodenia" => $data['datum_narodenia'],
+            "meno" => $data['name'],
+            "komunikacia" => $data['komunikacia'],
+        ];
+        $client->insert(["team_id" => client::TEAM_ID, "team_password" => client::TEAM_PWD, "zakaznik" => $obj]);
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],

@@ -20,7 +20,12 @@ class ZmluvaController extends Controller
         $user_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zakaznik?WSDL');
         $user_id = $user_client->getByAttributeValue(['attribute_name' => 'email', 'attribute_value' => $email, 'ids' => []])->zakazniks->zakaznik->id;
 
-        $zmluvy = $client->getByAttributeValue(['attribute_name' => 'zakaznik_id', 'attribute_value' => $user_id, 'ids' => []])->zmluvas->zmluva;
+        $zmluvas = $client->getByAttributeValue(['attribute_name' => 'zakaznik_id', 'attribute_value' => $user_id, 'ids' => []])->zmluvas;
+        if (!property_exists($zmluvas, 'zmluva')) {
+            $zmluvy = [];
+        } else {
+            $zmluvy = $zmluvas->zmluva;
+        }
         if (is_object($zmluvy)) {
             $zmluvy = array($zmluvy);
         }
@@ -46,7 +51,27 @@ class ZmluvaController extends Controller
      */
     public function store(Request $request)
     {
-        return view('ok', ['akcia' => 'Vytvorenie žiadosti', 'sprava' => 'Žiadosť o zmenu zmluvy bola zaznamenaná.', 'redirect' => '/home']);
+        $produkt_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095produkt?WSDL');
+        $produkt = $produkt_client->getByID(['id' => $request->produkt_id])->produkt;
+        $email = Auth::user()->email;
+        $user_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zakaznik?WSDL');
+        $user = $user_client->getByAttributeValue(['attribute_name' => 'email', 'attribute_value' => $email, 'ids' => []])->zakazniks->zakaznik;
+
+        $nova_zmluva = [
+            "id" => null,
+            "name" => $user->meno.' - '.$produkt->nazov,
+            "stav" => 1,
+            "zaciatok" => $request->zaciatok,
+            "koniec" => $request->koniec,
+            "produkt_id" => $request->produkt_id,
+            "zakaznik_id" => $user->id,
+            "zdovodnenie" => null,
+            "predchadzajuca_zmluva" => $request->predchadzajuca_zmluva
+        ];
+        $zmluva_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zmluva?WSDL');
+
+        $id = $zmluva_client->insert(["team_id" => client::TEAM_ID, "team_password" => client::TEAM_PWD, "zmluva" => $nova_zmluva]);
+        return view('ok', ['akcia' => 'Vytvorenie žiadosti', 'sprava' => 'Žiadosť o zmenu zmluvy bola zaznamenaná. (#'.$id->id.')', 'redirect' => '/home']);
     }
 
     /**
@@ -71,9 +96,13 @@ class ZmluvaController extends Controller
         $zmluva_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zmluva?WSDL');
         $zmluva = $zmluva_client->getByID(['id' => $id])->zmluva;
         $produkt_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095produkt?WSDL');
-        $produkty = $produkt_client->getAll()->produkts->produkt;
+        $produkts = $produkt_client->getAll()->produkts;
+        if (!property_exists($produkts, 'produkt')) {
+            $produkty = [];
+        } else {
+            $produkty = $produkts->produkt;
+        }
         if (is_object($produkty)) {
-            echo('hej');
             $produkty = array($produkty);
         }
         return view('upravazmluvy', ['produkty' => $produkty, 'zmluva' => $zmluva]);
@@ -105,11 +134,16 @@ class ZmluvaController extends Controller
     public function potvrdenie_formular()
     {
         $zmluva_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zmluva?WSDL');
-        $zmluvy = $zmluva_client->getByAttributeValue(['attribute_name' => 'stav', 'attribute_value' => 1, 'ids' => []])->zmluvas->zmluva;
+        $zmluvas = $zmluva_client->getByAttributeValue(['attribute_name' => 'stav', 'attribute_value' => 1, 'ids' => []])->zmluvas;
         //1 - podana ziadost, 2 - prijata, 3 - zamietnuta
         $zakaznik_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zakaznik?WSDL');
         $produkt_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095produkt?WSDL');
 
+        if (!property_exists($zmluvas, 'zmluva')) {
+            $zmluvy = [];
+        } else {
+            $zmluvy = $zmluvas->zmluva;
+        }
         if (is_object($zmluvy)) {
             $zmluvy = array($zmluvy);
         }
