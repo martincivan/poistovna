@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\ApiClient\client;
+use App\Jobs\PosliNotifikaciu;
 use Illuminate\Http\Request;
 
 
@@ -59,6 +60,19 @@ class ProduktController extends Controller
             "schvalene" => null,
         ];
         $id = $client->insert(["team_id" => client::TEAM_ID, "team_password" => client::TEAM_PWD, "produkt" => $obj]);
+
+
+        $date = new \DateTime($request->get('zaciatok'));
+
+        $delay = $date->getTimestamp() - now()->getTimestamp();
+        if ($delay <= 0) {
+            $delay = 5;
+        }
+
+        $job = (new PosliNotifikaciu($request->get('nazov'), $request->get('popis')))->delay($delay);
+
+        $this->dispatch($job);
+
         return view('ok', ['akcia' => 'Pridanie nového produktu', 'sprava' => 'Produkt: '.$obj['name'].' bol pridaný a začne platiť '.$obj['zaciatok'], 'redirect' => '/novyprodukt']);
     }
 
