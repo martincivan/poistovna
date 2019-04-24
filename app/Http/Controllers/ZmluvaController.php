@@ -173,6 +173,39 @@ class ZmluvaController extends Controller
         $zmluva->zdovodnenie = $r->zdovodnenie;
         $zmluva_client->update(["team_id" => client::TEAM_ID, "team_password" => client::TEAM_PWD, "entity_id" => $id, "zmluva" => $zmluva]);
 
+        $posta = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/NotificationServices/Mail?WSDL');
+
+        $str = <<<EOD
+Dobrý deň,
+
+s poľutovaním Vám musíme oznámiť, že vaša žiadosť bola zamietnutá z nasledovného dôvodu:
+$zmluva->zdovodnenie
+
+S pozdravom
+
+Vasa poistovna domacich milacikov.
+EOD;
+
+        $user_client = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/Students/Team095zakaznik?WSDL');
+        $user = $user_client->getById(['id' => $zmluva->zakaznik_id])->zakaznik;
+
+        $emaile = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/NotificationServices/Email?WSDL');
+        $posta = new \SoapClient('http://labss2.fiit.stuba.sk/pis/ws/NotificationServices/Mail?WSDL');
+
+        $predmet = "Vasa poistovna - zamietnutie ziadosti";
+
+        switch ($user->komunikacia) {
+            case 1:
+                $emaile->notify(["team_id" => client::TEAM_ID, "password" => client::TEAM_PWD, "subject" => $predmet,
+                    "message" => $str, "email" => $user->email]);
+                break;
+            case 2:
+                $posta->notify(["team_id" => client::TEAM_ID, "password" => client::TEAM_PWD, "subject" => $predmet,
+                    "message" => $str, "address" => $user->adresa]);
+                break;
+        }
+
+
         return view('ok', ['akcia' => 'Zamietnutie žiadosti', 'sprava' => 'Žiadosť o zmluvu bola zamietnutá', 'redirect' => '/potvrdenie']);
     }
 
